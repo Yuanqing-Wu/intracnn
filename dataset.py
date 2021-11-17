@@ -52,6 +52,8 @@ class DatasetFromFolder(data.Dataset):
         org = transform()(org)
         pre = transform()(pre)
 
+        qp = torch.from_numpy(np.array([qp]).astype(np.float32))
+
         return org, pre, qp, target
 
     def __len__(self):

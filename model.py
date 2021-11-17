@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
 class Net(torch.nn.Module):
     def __init__(self):
@@ -23,11 +24,8 @@ class Net(torch.nn.Module):
         T = F.relu(self.NC1(torch.cat((F1, F2), dim=1)))
         T = F.relu(self.NC2(T))
 
-        T = torch.squeeze(T)
-
-        qp = qp/54 - 0.5
-        qp = qp.unsqueeze(1)
-        # print(T.size(), qp.size())
+        T = T.squeeze(3).squeeze(2)
+        qp = qp / 64 - 0.5
 
         x = F.relu(self.FC1(torch.cat((T, qp), dim=1)))
         x = F.relu(self.FC2(torch.cat((x, qp), dim=1)))
@@ -35,6 +33,7 @@ class Net(torch.nn.Module):
 
 if __name__ == '__main__':
     model = Net()
+    qp = torch.from_numpy(np.array([22]).astype(np.float32))
     x = torch.ones(1, 1, 32, 32)
-    out = model(x, x, 22)
+    out = model(x, x, torch.ones(1, 1))
     print (out)

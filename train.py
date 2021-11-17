@@ -100,9 +100,9 @@ train_list = 'train_list.txt'
 test_list = 'test_list.txt'
 batchSize = 32
 lr = 1e-4
-nEpochs = 500
-pretrained = 40
-model_path = './model/model_epoch40.pth'
+nEpochs = 50000
+pretrained = 590
+model_path = './model/model_epoch590.pth'
 
 print('===> Loading datasets')
 train_set = DatasetFromFolder(data_dir, train_list, 32, 32)
