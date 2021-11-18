@@ -87,11 +87,11 @@ def test():
                         TN += 1
             # break
         t1 = time.time()
-    print('*************************************************')
-    print('准确度:', (TP+TN)/(TP+FN+FP+TN))
-    print('不划分预测准确度:', TP/(TP+FN))
-    print('划分预测准确度:', TN/(FP+TN))
-    print('*************************************************')
+    print('--------------------------------------------------')
+    print('准确度:', (TP+TN)/(TP+FN+FP+TN), str(TP+TN) + '/' + str(TP+FN+FP+TN))
+    print('不划分预测准确度:', TP/(TP+FN), str(TP) + '/' + str(TP+FN))
+    print('划分预测准确度:', TN/(FP+TN), str(TN) + '/' + str(FP+TN))
+    print('--------------------------------------------------')
 
 ## 参数
 threads = 8 #数据加载线程
@@ -101,8 +101,8 @@ test_list = 'test_list.txt'
 batchSize = 32
 lr = 1e-4
 nEpochs = 50000
-pretrained = 590
-model_path = './model/model_epoch590.pth'
+pretrained = 1960
+model_path = './model/model_epoch1960.pth'
 
 print('===> Loading datasets')
 train_set = DatasetFromFolder(data_dir, train_list, 32, 32)
@@ -139,7 +139,7 @@ for epoch in range(1, nEpochs + 1):
 
 
     # learning rate is decayed by a factor of 10 every half of total epochs
-    if (epoch+pretrained) % 200 == 0:
+    if (epoch+pretrained) % 500 == 0:
         for param_group in optimizer.param_groups:
             param_group['lr'] /= 1.1
         print('Learning rate decay: lr={}'.format(optimizer.param_groups[0]['lr']))

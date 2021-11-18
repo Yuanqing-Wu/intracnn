@@ -15,10 +15,10 @@ for csv_file in csv_list:
         neg = df[df[6]!=df[12]]  # 划分
         #print(pos)
 
-        if pos.shape[0] < neg.shape[0]:
-            neg = neg.sample(n=int(len(pos)), replace=False, axis=0)
-        if pos.shape[0] > neg.shape[0]:
-            pos = pos.sample(n=int(len(neg)), replace=False, axis=0)
+        # if pos.shape[0] < neg.shape[0]:
+        #     neg = neg.sample(n=int(len(pos)), replace=False, axis=0)
+        # if pos.shape[0] > neg.shape[0]:
+        #     pos = pos.sample(n=int(len(neg)), replace=False, axis=0)
 
         for i in pos.index:
             train_list.write(csv_file.split('.csv')[0] + ',' + '%08d'%(i) + ',' + str(df.iloc[i, 5]) + ',0\n') # 不划分
