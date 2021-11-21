@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-data_path = '/home/wgq/research/bs/dataset/allintra'
+data_path = '/home/wgq/research/bs/VVCSoftware_VTM/video'
 csv_list = [f for f in os.listdir(data_path)]
 
 #train_list = open(data_path + '/test_list.txt', 'w')
@@ -68,13 +68,14 @@ for csv_file in csv_list:
             df.iloc[i, 13] = pos
 
         save_list(csv_file.split('.')[0], df, 64, 64)
-        save_list(csv_file.split('.')[0], df, 32, 32)
-        save_list(csv_file.split('.')[0], df, 16, 16)
-        save_list(csv_file.split('.')[0], df, 8, 8)
-        save_list(csv_file.split('.')[0], df, 32, 16)
-        save_list(csv_file.split('.')[0], df, 32, 8)
-        save_list(csv_file.split('.')[0], df, 16, 8)
-
+        df.to_csv(data_path + '1', header=0, index=0)
+        # save_list(csv_file.split('.')[0], df, 32, 32)
+        # save_list(csv_file.split('.')[0], df, 16, 16)
+        # save_list(csv_file.split('.')[0], df, 8, 8)
+        # save_list(csv_file.split('.')[0], df, 32, 16)
+        # save_list(csv_file.split('.')[0], df, 32, 8)
+        # save_list(csv_file.split('.')[0], df, 16, 8)
+        df.to_csv(data_path + '/' + csv_file + '1', header=0, index=0)
         # break
 
 # train_list.close()

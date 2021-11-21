@@ -72,7 +72,7 @@ def train(epoch):
         predict = model(org, pre, qp) #train
 
         if cu_size == '64x64':
-            loss = criterion(predict, sns_target)
+            loss = criterion(predict[0], sns_target)
         else:
             loss = criterion(predict[0], sns_target) + criterion(predict[1], hsvs_target)
 
@@ -82,7 +82,7 @@ def train(epoch):
         optimizer.step()
         t3 = time.time()
 
-        print("===> Epoch[{}]({}/{}): Loss: {:.6f} || Timer: {:.4f} sec.".format(epoch, iteration, len(training_data_loader), loss.item(), (t3 - t2)))
+        # print("===> Epoch[{}]({}/{}): Loss: {:.6f} || Timer: {:.4f} sec.".format(epoch, iteration, len(training_data_loader), loss.item(), (t3 - t2)))
     t1 = time.time()
     print("===> Epoch [{}] Complete: Loss: {:.6f} || Timer: {:.4f} sec.".format(epoch, epoch_loss / len(training_data_loader), (t1 - t0)))
 
@@ -106,7 +106,7 @@ def test():
 
             predict= model(org, pre, qp)
             if cu_size == '64x64':
-                predict = F.softmax(predict, dim=1)
+                predict = F.softmax(predict[0], dim=1)
                 for i in range(predict.size()[0]):
                     if sns_target[i] == 0:
                         if predict[i][0] > 0.5:
@@ -202,13 +202,13 @@ for epoch in range(1, nEpochs + 1):
     print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
     train(epoch+pretrain_epoch)
 
-    if (epoch+pretrain_epoch)%1 == 0:
+    if (epoch+pretrain_epoch)%50 == 0:
         checkpoint(epoch+pretrain_epoch)
         test()
 
 
     # learning rate is decayed by a factor of 10 every half of total epochs
-    if (epoch+pretrain_epoch) % 200 == 0:
+    if (epoch+pretrain_epoch) % 500 == 0:
         for param_group in optimizer.param_groups:
             param_group['lr'] /= 1.1
         print('Learning rate decay: lr={}'.format(optimizer.param_groups[0]['lr']))

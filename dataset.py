@@ -14,8 +14,8 @@ def transform():
 def read_yuv(yuv_path, pos, w, h):
     fp = open(yuv_path, 'rb')
     fp.seek(pos)
-    Y_data = fp.read(w*h)
-    Y = np.reshape(np.fromstring(Y_data,'B'),(h, w, 1))
+    Y = fp.read(w*h)
+    Y = np.reshape(np.fromstring(Y,'B'), (w, h, 1))
     fp.close()
     return Y
 
