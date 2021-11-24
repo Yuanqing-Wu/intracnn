@@ -58,7 +58,7 @@ class DatasetFromFolder(data.Dataset):
 
         qp = torch.from_numpy(np.array([qp]).astype(np.float32))
 
-        return org, pre, qp, sns_target, hsvs_target
+        return org, pre - org, qp, sns_target, hsvs_target
 
     def __len__(self):
         return len(self.data_paths)

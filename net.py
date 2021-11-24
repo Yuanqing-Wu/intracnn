@@ -7,274 +7,228 @@ class Net64x64(torch.nn.Module):
     def __init__(self):
         super(Net64x64, self).__init__()
 
-        self.NC_o1 = nn.Conv2d(1, 4, kernel_size=4, stride=4, padding=0, bias=True) # (1, 64, 64) -> (4, 16, 16)
-        self.NC_p1 = nn.Conv2d(2, 4, kernel_size=4, stride=4, padding=0, bias=True) # (2, 64, 64) -> (4, 16, 16)
+        self.NC1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding =1, bias=True) # (1, 64, 64) -> (8, 64, 64)
 
-        self.NC_o2 = nn.Conv2d(4, 4, kernel_size=4, stride=4, padding=0, bias=True) # (4, 16, 16) -> (4, 4, 4)
-        self.NC_p2 = nn.Conv2d(4, 4, kernel_size=4, stride=4, padding=0, bias=True) # (4, 16, 16) -> (4, 4, 4)
+        self.NC2 = nn.Conv2d(9, 9, kernel_size=32, stride=32, padding=0, bias=True) # (8, 64, 64) -> (8, 2, 2)
+        self.NC3 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
 
-        self.NC3 = nn.Conv2d(8, 16, kernel_size=4, stride=4, padding=0, bias=True) # (8, 4, 4) -> (32, 1, 1)
-
-        self.FC1 = nn.Linear(17,2) # 33 -> 2
+        self.FC = nn.Linear(10,2) # 33 -> 2
 
     def forward(self, org, pre, qp):
 
-        F_o = F.relu(self.NC_o1(org))
-        F_p = F.relu(self.NC_p1(torch.cat((org, pre), dim=1)))
-
-        F_o = F.relu(self.NC_o2(F_o))
-        F_p = F.relu(self.NC_p2(F_p))
-
-        T = F.relu(self.NC3(torch.cat((F_o, F_p), dim=1)))
+        T = F.relu(self.NC1(org))
+        T = F.relu(self.NC2(torch.cat((T, pre), dim=1)))
+        T = F.relu(self.NC3(T))
 
         T = T.squeeze(3).squeeze(2)
         qp = qp / 64 - 0.5
 
-        x = self.FC1(torch.cat((T, qp), dim=1))
+        x = self.FC(torch.cat((T, qp), dim=1))
         return x, x
 
 class Net32x32(torch.nn.Module):
     def __init__(self):
         super(Net32x32, self).__init__()
 
-        self.NC_o1 = nn.Conv2d(1, 4, kernel_size=4, stride=4, padding=0, bias=True) # (1, 32, 32) -> (4, 8, 8)
-        self.NC_p1 = nn.Conv2d(2, 4, kernel_size=4, stride=4, padding=0, bias=True) # (2, 32, 32) -> (4, 8, 8)
+        self.NC1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding =1, bias=True) # (1, 64, 64) -> (8, 64, 64)
+        self.NC2 = nn.Conv2d(9, 9, kernel_size=16, stride=16, padding=0, bias=True) # (8, 64, 64) -> (8, 2, 2)
+        self.NC3_1 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
+        self.NC3_2 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
 
-        self.NC2 = nn.Conv2d(8, 8, kernel_size=4, stride=4, padding=0, bias=True) # (4, 8, 8) -> (4, 2, 2)
-        self.NC3 = nn.Conv2d(8, 16, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (16, 1, 1)
-
-        self.FC1_stage1 = nn.Linear(17,2) # 17 -> 2
-        self.FC1_stage2 = nn.Linear(17,2) # 17 -> 2
+        self.FC1 = nn.Linear(10,2) # 9 -> 2
+        self.FC2 = nn.Linear(10,2) # 9 -> 2
 
     def forward(self, org, pre, qp):
 
-        F_o = F.relu(self.NC_o1(org))
-        F_p = F.relu(self.NC_p1(torch.cat((org, pre), dim=1)))
+        T = F.relu(self.NC1(org))
+        T = F.relu(self.NC2(torch.cat((T, pre), dim=1)))
 
-        T = F.relu(self.NC2(torch.cat((F_o, F_p), dim=1)))
-        T = F.relu(self.NC3(T))
+        T1 = F.relu(self.NC3_1(T))
+        T2 = F.relu(self.NC3_2(T))
 
-        T = T.squeeze(3).squeeze(2)
+        T1 = T1.squeeze(3).squeeze(2)
+        T2 = T2.squeeze(3).squeeze(2)
         qp = qp / 64 - 0.5
 
-        x1 = self.FC1_stage1(torch.cat((T, qp), dim=1))
-        x2 = self.FC1_stage2(torch.cat((T, qp), dim=1))
-
+        x1 = self.FC1(torch.cat((T1, qp), dim=1))
+        x2 = self.FC1(torch.cat((T2, qp), dim=1))
         return x1, x2
 
 class Net16x16(torch.nn.Module):
     def __init__(self):
         super(Net16x16, self).__init__()
 
-        self.NC_o1 = nn.Conv2d(1, 4, kernel_size=4, stride=4, padding=0, bias=True) # (1, 16, 16) -> (4, 4, 4)
-        self.NC_p1 = nn.Conv2d(2, 4, kernel_size=4, stride=4, padding=0, bias=True) # (2, 16, 16) -> (4, 4, 4)
+        self.NC1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding =1, bias=True) # (1, 64, 64) -> (8, 64, 64)
+        self.NC2 = nn.Conv2d(9, 9, kernel_size=8, stride=8, padding=0, bias=True) # (8, 64, 64) -> (8, 2, 2)
+        self.NC3_1 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
+        self.NC3_2 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
 
-        self.NC2 = nn.Conv2d(8, 16, kernel_size=4, stride=4, padding=0, bias=True) # (8, 4, 4) -> (32, 1, 1)
-
-        self.FC1_stage1 = nn.Linear(17,2) # 17 -> 2
-        self.FC1_stage2 = nn.Linear(17,2) # 17 -> 2
+        self.FC1 = nn.Linear(10,2) # 9 -> 2
+        self.FC2 = nn.Linear(10,2) # 9 -> 2
 
     def forward(self, org, pre, qp):
 
-        F_o = F.relu(self.NC_o1(org))
-        F_p = F.relu(self.NC_p1(torch.cat((org, pre), dim=1)))
+        T = F.relu(self.NC1(org))
+        T = F.relu(self.NC2(torch.cat((T, pre), dim=1)))
 
-        T = F.relu(self.NC2(torch.cat((F_o, F_p), dim=1)))
+        T1 = F.relu(self.NC3_1(T))
+        T2 = F.relu(self.NC3_2(T))
 
-        T = T.squeeze(3).squeeze(2)
+        T1 = T1.squeeze(3).squeeze(2)
+        T2 = T2.squeeze(3).squeeze(2)
         qp = qp / 64 - 0.5
 
-        x1 = self.FC1_stage1(torch.cat((T, qp), dim=1))
-        x2 = self.FC1_stage2(torch.cat((T, qp), dim=1))
-
+        x1 = self.FC1(torch.cat((T1, qp), dim=1))
+        x2 = self.FC1(torch.cat((T2, qp), dim=1))
         return x1, x2
 
 class Net32x16(torch.nn.Module):
     def __init__(self):
         super(Net32x16, self).__init__()
 
-        self.NC_o1 = nn.Conv2d(1, 4, kernel_size=(8, 4), stride=(8, 4), padding=0, bias=True) # (1, 32, 16) -> (4, 4, 4)
-        self.NC_p1 = nn.Conv2d(2, 4, kernel_size=(8, 4), stride=(8, 4), padding=0, bias=True) # (2, 32, 16) -> (4, 4, 4)
+        self.NC1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding =1, bias=True) # (1, 64, 64) -> (8, 64, 64)
+        self.NC2 = nn.Conv2d(9, 9, kernel_size=(16, 8), stride=(16, 8), padding=0, bias=True) # (8, 64, 64) -> (8, 2, 2)
+        self.NC3_1 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
+        self.NC3_2 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
 
-        self.NC2 = nn.Conv2d(8, 16, kernel_size=4, stride=4, padding=0, bias=True) # (8, 4, 4) -> (32, 1, 1)
-
-        self.FC1_stage1 = nn.Linear(17,2) # 17 -> 2
-        self.FC1_stage2 = nn.Linear(17,2) # 17 -> 2
+        self.FC1 = nn.Linear(10,2) # 9 -> 2
+        self.FC2 = nn.Linear(10,2) # 9 -> 2
 
     def forward(self, org, pre, qp):
 
-        F_o = F.relu(self.NC_o1(org))
-        F_p = F.relu(self.NC_p1(torch.cat((org, pre), dim=1)))
+        T = F.relu(self.NC1(org))
+        T = F.relu(self.NC2(torch.cat((T, pre), dim=1)))
 
-        T = F.relu(self.NC2(torch.cat((F_o, F_p), dim=1)))
+        T1 = F.relu(self.NC3_1(T))
+        T2 = F.relu(self.NC3_2(T))
 
-        T = T.squeeze(3).squeeze(2)
+        T1 = T1.squeeze(3).squeeze(2)
+        T2 = T2.squeeze(3).squeeze(2)
         qp = qp / 64 - 0.5
 
-        x1 = self.FC1_stage1(torch.cat((T, qp), dim=1))
-        x2 = self.FC1_stage2(torch.cat((T, qp), dim=1))
-
+        x1 = self.FC1(torch.cat((T1, qp), dim=1))
+        x2 = self.FC1(torch.cat((T2, qp), dim=1))
         return x1, x2
 
 class Net8x8(torch.nn.Module):
     def __init__(self):
         super(Net8x8, self).__init__()
 
-        self.NC_o1 = nn.Conv2d(1, 4, kernel_size=4, stride=4, padding=0, bias=True) # (1, 8, 8) -> (4, 2, 2)
-        self.NC_p1 = nn.Conv2d(2, 4, kernel_size=4, stride=4, padding=0, bias=True) # (2, 8, 8) -> (4, 2, 2)
+        self.NC1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding =1, bias=True) # (1, 64, 64) -> (8, 64, 64)
+        self.NC2 = nn.Conv2d(9, 9, kernel_size=4, stride=4, padding=0, bias=True) # (8, 64, 64) -> (8, 2, 2)
+        self.NC3_1 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
+        self.NC3_2 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
 
-        self.NC2 = nn.Conv2d(8, 16, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (16, 1, 1)
-
-        self.FC1_stage1 = nn.Linear(17,2) # 17 -> 2
-        self.FC1_stage2 = nn.Linear(17,2) # 17 -> 2
+        self.FC1 = nn.Linear(10,2) # 9 -> 2
+        self.FC2 = nn.Linear(10,2) # 9 -> 2
 
     def forward(self, org, pre, qp):
 
-        F_o = F.relu(self.NC_o1(org))
-        F_p = F.relu(self.NC_p1(torch.cat((org, pre), dim=1)))
+        T = F.relu(self.NC1(org))
+        T = F.relu(self.NC2(torch.cat((T, pre), dim=1)))
 
-        T = F.relu(self.NC2(torch.cat((F_o, F_p), dim=1)))
+        T1 = F.relu(self.NC3_1(T))
+        T2 = F.relu(self.NC3_2(T))
 
-        T = T.squeeze(3).squeeze(2)
+        T1 = T1.squeeze(3).squeeze(2)
+        T2 = T2.squeeze(3).squeeze(2)
         qp = qp / 64 - 0.5
 
-        x1 = self.FC1_stage1(torch.cat((T, qp), dim=1))
-        x2 = self.FC1_stage2(torch.cat((T, qp), dim=1))
-
+        x1 = self.FC1(torch.cat((T1, qp), dim=1))
+        x2 = self.FC1(torch.cat((T2, qp), dim=1))
         return x1, x2
 
 class Net32x8(torch.nn.Module):
     def __init__(self):
         super(Net32x8, self).__init__()
 
-        self.NC_o1 = nn.Conv2d(1, 4, kernel_size=(16, 4), stride=(16, 4), padding=0, bias=True) # (1, 32, 8) -> (4, 2, 2)
-        self.NC_p1 = nn.Conv2d(2, 4, kernel_size=(16, 4), stride=(16, 4), padding=0, bias=True) # (2, 32, 8) -> (4, 2, 2)
+        self.NC1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding =1, bias=True) # (1, 64, 64) -> (8, 64, 64)
+        self.NC2 = nn.Conv2d(9, 9, kernel_size=(16, 4), stride=(16, 4), padding=0, bias=True) # (8, 64, 64) -> (8, 2, 2)
+        self.NC3_1 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
+        self.NC3_2 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
 
-        self.NC2 = nn.Conv2d(8, 16, kernel_size=2, stride=2, padding=0, bias=True) # (16, 2, 2) -> (32, 1, 1)
-
-        self.FC1_stage1 = nn.Linear(17,2) # 17 -> 2
-        self.FC1_stage2 = nn.Linear(17,2) # 17 -> 2
+        self.FC1 = nn.Linear(10,2) # 9 -> 2
+        self.FC2 = nn.Linear(10,2) # 9 -> 2
 
     def forward(self, org, pre, qp):
 
-        F_o = F.relu(self.NC_o1(org))
-        F_p = F.relu(self.NC_p1(torch.cat((org, pre), dim=1)))
+        T = F.relu(self.NC1(org))
+        T = F.relu(self.NC2(torch.cat((T, pre), dim=1)))
 
-        T = F.relu(self.NC2(torch.cat((F_o, F_p), dim=1)))
-        T = T.squeeze(3).squeeze(2)
+        T1 = F.relu(self.NC3_1(T))
+        T2 = F.relu(self.NC3_2(T))
 
+        T1 = T1.squeeze(3).squeeze(2)
+        T2 = T2.squeeze(3).squeeze(2)
         qp = qp / 64 - 0.5
 
-        x1 = self.FC1_stage1(torch.cat((T, qp), dim=1))
-        x2 = self.FC1_stage2(torch.cat((T, qp), dim=1))
-
+        x1 = self.FC1(torch.cat((T1, qp), dim=1))
+        x2 = self.FC1(torch.cat((T2, qp), dim=1))
         return x1, x2
 
 class Net16x8(torch.nn.Module):
     def __init__(self):
         super(Net16x8, self).__init__()
 
-        self.NC_o1 = nn.Conv2d(1, 4, kernel_size=(8, 4), stride=(8, 4), padding=0, bias=True) # (1, 16, 8) -> (4, 2, 2)
-        self.NC_p1 = nn.Conv2d(2, 4, kernel_size=(8, 4), stride=(8, 4), padding=0, bias=True) # (2, 16, 8) -> (4, 2, 2)
+        self.NC1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding =1, bias=True) # (1, 64, 64) -> (8, 64, 64)
+        self.NC2 = nn.Conv2d(9, 9, kernel_size=(8, 4), stride=(8, 4), padding=0, bias=True) # (8, 64, 64) -> (8, 2, 2)
+        self.NC3_1 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
+        self.NC3_2 = nn.Conv2d(9, 9, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (8, 1, 1)
 
-        self.NC2 = nn.Conv2d(8, 16, kernel_size=2, stride=2, padding=0, bias=True) # (8, 2, 2) -> (16, 1, 1)
-
-        self.FC1_stage1 = nn.Linear(17,2) # 17 -> 2
-        self.FC1_stage2 = nn.Linear(17,2) # 17 -> 2
+        self.FC1 = nn.Linear(10,2) # 9 -> 2
+        self.FC2 = nn.Linear(10,2) # 9 -> 2
 
     def forward(self, org, pre, qp):
 
-        F_o = F.relu(self.NC_o1(org))
-        F_p = F.relu(self.NC_p1(torch.cat((org, pre), dim=1)))
+        T = F.relu(self.NC1(org))
+        T = F.relu(self.NC2(torch.cat((T, pre), dim=1)))
 
-        T = F.relu(self.NC2(torch.cat((F_o, F_p), dim=1)))
+        T1 = F.relu(self.NC3_1(T))
+        T2 = F.relu(self.NC3_2(T))
 
-        T = T.squeeze(3).squeeze(2)
+        T1 = T1.squeeze(3).squeeze(2)
+        T2 = T2.squeeze(3).squeeze(2)
         qp = qp / 64 - 0.5
 
-        x1 = self.FC1_stage1(torch.cat((T, qp), dim=1))
-        x2 = self.FC1_stage2(torch.cat((T, qp), dim=1))
-
+        x1 = self.FC1(torch.cat((T1, qp), dim=1))
+        x2 = self.FC1(torch.cat((T2, qp), dim=1))
         return x1, x2
 
-class Net32x4(torch.nn.Module):
-    def __init__(self):
-        super(Net32x4, self).__init__()
 
-        self.NC_o1 = nn.Conv2d(1, 8, kernel_size=(16, 2), stride=(16, 2), padding=0, bias=True) # (1, 32, 4) -> (8, 2, 2)
-        self.NC_p1 = nn.Conv2d(2, 8, kernel_size=(16, 2), stride=(16, 2), padding=0, bias=True) # (2, 32, 4) -> (8, 2, 2)
-
-        self.NC2 = nn.Conv2d(16, 32, kernel_size=2, stride=2, padding=0, bias=True) # (16, 2, 2) -> (32, 1, 1)
-
-        self.FC1 = nn.Linear(33,2) # 33 -> 2
-
-    def forward(self, org, pre, qp):
-
-        F_o = F.relu(self.NC_o1(org))
-        F_p = F.relu(self.NC_p1(torch.cat((org, pre), dim=1)))
-
-        T = F.relu(self.NC2(torch.cat((F_o, F_p), dim=1)))
-
-        T = T.squeeze(3).squeeze(2)
-        qp = qp / 64 - 0.5
-
-        x = self.FC1(torch.cat((T, qp), dim=1))
-
-        return x
-
-class Net16x4(torch.nn.Module):
-    def __init__(self):
-        super(Net16x4, self).__init__()
-
-        self.NC_o1 = nn.Conv2d(1, 8, kernel_size=(8, 2), stride=(8, 2), padding=0, bias=True) # (1, 16, 4) -> (8, 2, 2)
-        self.NC_p1 = nn.Conv2d(2, 8, kernel_size=(8, 2), stride=(8, 2), padding=0, bias=True) # (2, 16, 4) -> (8, 2, 2)
-
-        self.NC2 = nn.Conv2d(16, 32, kernel_size=2, stride=2, padding=0, bias=True) # (16, 2, 2) -> (32, 1, 1)
-
-        self.FC1 = nn.Linear(33,2) # 33 -> 2
-
-    def forward(self, org, pre, qp):
-
-        F_o = F.relu(self.NC_o1(org))
-        F_p = F.relu(self.NC_p1(torch.cat((org, pre), dim=1)))
-
-        T = F.relu(self.NC2(torch.cat((F_o, F_p), dim=1)))
-
-        T = T.squeeze(3).squeeze(2)
-        qp = qp / 64 - 0.5
-
-        x = self.FC1(torch.cat((T, qp), dim=1))
-
-        return x
-
-class Net8x4(torch.nn.Module):
-    def __init__(self):
-        super(Net8x4, self).__init__()
-
-        self.NC_o1 = nn.Conv2d(1, 8, kernel_size=(4, 2), stride=(4, 2), padding=0, bias=True) # (1, 8, 4) -> (8, 2, 2)
-        self.NC_p1 = nn.Conv2d(2, 8, kernel_size=(4, 2), stride=(4, 2), padding=0, bias=True) # (2, 8, 4) -> (8, 2, 2)
-
-        self.NC2 = nn.Conv2d(16, 32, kernel_size=2, stride=2, padding=0, bias=True) # (16, 2, 2) -> (32, 1, 1)
-
-        self.FC1 = nn.Linear(33,2) # 33 -> 2
-
-    def forward(self, org, pre, qp):
-
-        F_o = F.relu(self.NC_o1(org))
-        F_p = F.relu(self.NC_p1(torch.cat((org, pre), dim=1)))
-
-        T = F.relu(self.NC2(torch.cat((F_o, F_p), dim=1)))
-
-        T = T.squeeze(3).squeeze(2)
-        qp = qp / 64 - 0.5
-
-        x = self.FC1(torch.cat((T, qp), dim=1))
-
-        return x
 
 if __name__ == '__main__':
 
+    model = Net64x64()
+    x = torch.ones(1, 1, 64, 64)
+    out = model(x, x, torch.ones(1, 1))
+    print (out)
+
+    model = Net32x32()
+    x = torch.ones(1, 1, 32, 32)
+    out = model(x, x, torch.ones(1, 1))
+    print (out)
+
+    model = Net16x16()
+    x = torch.ones(1, 1, 16, 16)
+    out = model(x, x, torch.ones(1, 1))
+    print (out)
+
     model = Net8x8()
     x = torch.ones(1, 1, 8, 8)
+    out = model(x, x, torch.ones(1, 1))
+    print (out)
+
+    model = Net32x16()
+    x = torch.ones(1, 1, 32, 16)
+    out = model(x, x, torch.ones(1, 1))
+    print (out)
+
+    model = Net32x8()
+    x = torch.ones(1, 1, 32, 8)
+    out = model(x, x, torch.ones(1, 1))
+    print (out)
+
+    model = Net16x8()
+    x = torch.ones(1, 1, 16, 8)
     out = model(x, x, torch.ones(1, 1))
     print (out)

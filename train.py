@@ -59,17 +59,17 @@ def train(epoch):
     model.train()
     t0 = time.time()
     for iteration, batch in enumerate(training_data_loader, 1):
-        org, pre, qp, sns_target, hsvs_target= batch[0], batch[1], batch[2], batch[3], batch[4]
+        org, res, qp, sns_target, hsvs_target= batch[0], batch[1], batch[2], batch[3], batch[4]
 
         org = Variable(org).cuda(0)
-        pre = Variable(pre).cuda(0)
+        res = Variable(res).cuda(0)
         qp = Variable(qp).cuda(0)
         sns_target = Variable(sns_target).cuda(0)
         hsvs_target = Variable(hsvs_target).cuda(0)
 
         t2 = time.time()
         optimizer.zero_grad()
-        predict = model(org, pre, qp) #train
+        predict = model(org, res, qp) #train
 
         if cu_size == '64x64':
             loss = criterion(predict[0], sns_target)
@@ -84,7 +84,7 @@ def train(epoch):
 
         # print("===> Epoch[{}]({}/{}): Loss: {:.6f} || Timer: {:.4f} sec.".format(epoch, iteration, len(training_data_loader), loss.item(), (t3 - t2)))
     t1 = time.time()
-    print("===> Epoch [{}] Complete: Loss: {:.6f} || Timer: {:.4f} sec.".format(epoch, epoch_loss / len(training_data_loader), (t1 - t0)))
+    print("===> Epoch [{}] Complete: Loss: {:.6f} || Timer: {:.4f} sec.".format(epoch, epoch_loss / len(training_data_loader), (t1 - t0)), flush=True)
 
 def test():
 
@@ -96,15 +96,15 @@ def test():
         t0 = time.time()
         for iteration, batch in enumerate(testing_data_loader, 1):
 
-            org, pre, qp, sns_target, hsvs_target= batch[0], batch[1], batch[2], batch[3], batch[4]
+            org, res, qp, sns_target, hsvs_target= batch[0], batch[1], batch[2], batch[3], batch[4]
 
             org = Variable(org).cuda(0)
-            pre = Variable(pre).cuda(0)
+            res = Variable(res).cuda(0)
             qp = Variable(qp).cuda(0)
             sns_target = Variable(sns_target).cuda(0)
             hsvs_target = Variable(hsvs_target).cuda(0)
 
-            predict= model(org, pre, qp)
+            predict= model(org, res, qp)
             if cu_size == '64x64':
                 predict = F.softmax(predict[0], dim=1)
                 for i in range(predict.size()[0]):
@@ -163,7 +163,7 @@ train_set = DatasetFromFolder(data_dir, train_list, w, h)
 training_data_loader = DataLoader(dataset=train_set, num_workers=threads, batch_size=batchSize, shuffle=True)
 
 test_set = DatasetFromFolder(data_dir, test_list, w, h)
-testing_data_loader = DataLoader(dataset=test_set, num_workers=threads, batch_size=batchSize*10, shuffle=True)
+testing_data_loader = DataLoader(dataset=test_set, num_workers=threads, batch_size=batchSize, shuffle=True)
 
 print('===> Building model ')
 
