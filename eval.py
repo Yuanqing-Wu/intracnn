@@ -24,35 +24,41 @@ org_path = '/home/wgq/research/bs/VVCSoftware_VTM/video/BasketballPass_416x240_5
 pre_path = '/home/wgq/research/bs/VVCSoftware_VTM/video/BasketballPass_416x240_50_8bitpre.yuv'
 qp = 32
 
-org = read_yuv(org_path, 67584, 64, 64)
-pre = read_yuv(pre_path, 67584, 64, 64)
+org = read_yuv(org_path, 273856, 64, 64)
+pre = read_yuv(pre_path, 273856, 64, 64)
 
-org = (np.array(org)).astype(np.float32)
-pre = (np.array(pre)).astype(np.float32)
+# org = (np.array(org)).astype(np.float32)
+# pre = (np.array(pre)).astype(np.float32)
 
-org = org / 127.5 - 1.
-pre = pre / 127.5 - 1.
+res = pre - org
 
-org = transform()(org)
-pre = transform()(pre)
-org = org.unsqueeze(1)
-pre = pre.unsqueeze(1)
+fp = open('/home/wgq/research/bs/VVCSoftware_VTM/video/res.yuv', 'wb')
+fp.write(org)
+fp.close
 
-qp = torch.ones(1, 1)*qp
+# org = org / 127.5 - 1.
+# pre = pre / 127.5 - 1.
 
-model = net.Net64x64()
-model.load_state_dict(torch.load(model_path, map_location=lambda storage, loc: storage))
-model = model.cuda(0)
+# org = transform()(org)
+# pre = transform()(pre)
+# org = org.unsqueeze(1)
+# pre = pre.unsqueeze(1)
 
-model.eval()
-with torch.no_grad():
+# qp = torch.ones(1, 1)*qp
 
-    org = Variable(org).cuda(0)
-    pre = Variable(pre).cuda(0)
-    qp = Variable(qp).cuda(0)
+# model = net.Net64x64()
+# model.load_state_dict(torch.load(model_path, map_location=lambda storage, loc: storage))
+# model = model.cuda(0)
 
-    # print(org)
+# model.eval()
+# with torch.no_grad():
 
-    predict= model(org, pre, qp)
-    # predict = F.softmax(predict, dim=1)
-    print(F.softmax(predict[0], dim=1), F.softmax(predict[1], dim=1))
+#     org = Variable(org).cuda(0)
+#     pre = Variable(pre).cuda(0)
+#     qp = Variable(qp).cuda(0)
+
+#     # print(org)
+
+#     predict= model(org, pre, qp)
+#     # predict = F.softmax(predict, dim=1)
+#     print(F.softmax(predict[0], dim=1), F.softmax(predict[1], dim=1))
